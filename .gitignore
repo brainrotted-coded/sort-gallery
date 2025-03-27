@@ -1,0 +1,21 @@
+# Ignore PyCharm files
+.idea/
+
+# Ignore virtual enviroments
+venv/
+.venv/
+
+# Ignore Python compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore dependencies installed with pip
+*.egg-info/
+dist/
+build/
+
+# Ignore other files
+src/__pycache__/
+src/Beta/
