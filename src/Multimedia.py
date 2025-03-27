@@ -50,8 +50,11 @@ def _change_modify_date(file_path: str, date_str: str, hhmmss_str: str):
         second: int = int(hour_match.group(3))
 
         new_date: tuple[int, int, int, int, int, int] = (year, month, day, hour, minute, second)
-        timestamp: float = time.mktime(new_date + (0, 0, -1))  # Convert to Unix timestamp
         try:
+            # 0 -> Day of the week. 0=Monday, but this parameter is ignored.
+            # 0 -> Day of the year (1-366). It is calculated automatically if it is 0.
+            # -1 -> Summer. 0=No, 1=Yes, -1=automatically detect.
+            timestamp: float = time.mktime(new_date + (0, 0, -1))  # Convert to Unix timestamp
             os.utime(file_path, (timestamp, timestamp))  # (access_time, modify_time)
             print(f"{file_path} MODIFY DATE UPDATED")
         except Exception as e:
@@ -157,7 +160,7 @@ class Multimedia:
                     new_path_name: str = os.path.join(path, new_name)
                     _rename_file(element_path, new_path_name)
                 else:
-                    print(f"NOT RENAMED: {element_path}")
+                    print(f"{element_path} NOT RENAMED")
             elif os.path.isdir(element_path):
                 self.rename_files(element_path)
 
@@ -173,7 +176,7 @@ class Multimedia:
             if os.path.isfile(element_path):
                 # RegEx to capture the date (YYYYMMDD) and the hour (HHMMSS)
                 match = re.match(
-                    r"(\d{8})[-_](\d{6}).+\.\w+",
+                    r"(\d{8})[-_](\d{6}).*\.\w+",
                     element_name
                 )
                 if match:
@@ -182,7 +185,7 @@ class Multimedia:
 
                     _change_modify_date(element_path, date_str, hhmmss_str)
                 else:
-                    print(f"DATE NOT CHANGED: {element_name}")
+                    print(f"MODIFY DATE NOT CHANGED: {element_path}")
             elif os.path.isdir(element_path):
                 self.change_all_modify_dates(element_path)
 
@@ -211,7 +214,7 @@ class Multimedia:
         For each element from the list, it checks if the extension of the file is the real extension.
         If isn't the real extension, it changes to the real extension.
         """
-        extensions_list: list[tuple[str, str, str]] = self._get_filetype_list()
+        extensions_list: list[tuple[str, str, str]] = self.get_filetype_list()
         for element in extensions_list:
             old_ext: str = element[1]
             new_ext: str = element[2].lower()
@@ -223,7 +226,7 @@ class Multimedia:
                     f"{element[0]}.{new_ext}",
                 )
 
-    def _get_filetype_list(self) -> list[tuple[str, str, str]]:
+    def get_filetype_list(self) -> list[tuple[str, str, str]]:
         """
         This function writes 'exiftool -r -fast -filetype "self._path"' in the cmd and captures the output
         to get this list: [(path, ext, real_ext), (path, ext, real_ext), ...]
