@@ -1,3 +1,4 @@
+from src.Exiftool import Exiftool
 from src.Multimedia import Multimedia
 
 
@@ -6,6 +7,7 @@ def display_menu():
     print("1. Rename files.")
     print("2. Change all dates.")
     print("3. Print all elements list.")
+    print("4. Install Exiftool.")
     print("0. Exit.")
 
 
@@ -17,6 +19,7 @@ class Menu:
         :type path: str
         """
         self._multimedia: Multimedia = Multimedia(path)
+        self._exiftool: Exiftool = Exiftool()
 
     def menu(self):
         """
@@ -45,6 +48,9 @@ class Menu:
             elif option == "3":
                 print("3. Print files list:")
                 self._multimedia.print_elements_list()
+            elif option == "4":
+                print("4. Install Exiftool.")
+                self._exiftool.install_exiftool()
             elif option == "0":
                 print("0. Leaving...")
                 run_menu = False
