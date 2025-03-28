@@ -15,28 +15,41 @@ from src.constants import (
 )
 
 
-def _get_program_files():  # windows
+def _get_program_files_x86() -> Path:
     """
-    This function returns 'Program Files' dir.
-    :return: Program Files
-    :rtype: Path | str | None
-    """
-    if sys.version_info >= (3, 6):  # Python 3.6 or newer installed
-        return Path(os.environ["ProgramFiles"])
-    else:
-        return os.environ.get("ProgramFiles")
-
-
-def _get_program_files_x86():  # windows
-    """
-    This function returns 'Program Files x86' dir.
+    This function returns 'Program Files x86' dir. Only on Windows.
     :return: Program Files x86
-    :rtype: Path | str | None
+    :rtype: Path
     """
-    if sys.version_info >= (3, 6):  # Python 3.6 or newer installed
-        return Path(os.environ.get("ProgramFiles(x86)", ""))
+    return Path(os.environ.get("ProgramFiles(x86)", "C:\\Program Files (x86)"))
+
+
+def get_add_exiftool_cmd() -> str:
+    """
+    This function gets a command to add the program into a path to run on the cmd.
+    It gets the command depending on the OS.
+    :return: command
+    :rtype: str
+    """
+    os_name: str = platform.system().lower()
+    if os_name == "windows":
+        if sys.version_info >= (3, 6):  # Python 3.6 or newer installed
+            program_files_path: Path = Path(os.environ["ProgramFiles"])
+        else:
+            program_files_path: Path = Path(os.environ.get("ProgramFiles", "C:\\Program Files"))
+        cmd: str = ADD_EXIFTOOL_ON_PATH["windows"].format(f'%PATH%;{program_files_path}')
+    elif os_name == "linux":
+        if Path("/usr/local/").exists():
+            program_files_path: Path = Path("/usr/local/")
+        else:
+            program_files_path: Path = Path("/opt/")
+        cmd: str = ADD_EXIFTOOL_ON_PATH["linux/macos"].format(f'{program_files_path}:$PATH')
+    elif os_name == "darwin":
+        program_files_path: Path = Path("/Applications")
+        cmd: str = ADD_EXIFTOOL_ON_PATH["linux/macos"].format(f'{program_files_path}:$PATH')
     else:
-        return os.environ.get("ProgramFiles(x86)")
+        raise Exception("Unsupported OS")
+    return cmd
 
 
 def _install_exiftool_cmd(install_exiftool_cmd: str):
@@ -83,10 +96,10 @@ def _check_exiftool() -> str | None:
 
 class Exiftool:
     def __init__(self):
-        self._program_files = _get_program_files()  # Default location for 64-bit programs
-        self._program_files_x86 = _get_program_files_x86()  # For 32-bit programs on 64-bit Windows
-
-        self._add_exiftool_on_path_cmd: str = ADD_EXIFTOOL_ON_PATH.format(f"%PATH%;{self._program_files}")
+        """
+        This class is used to install Exiftool automatically if the user don't have it installed.
+        """
+        self._add_exiftool_on_path_cmd: str = get_add_exiftool_cmd()
 
     def _add_exiftool_on_path(self):
         """
@@ -137,4 +150,4 @@ class Exiftool:
             else:
                 raise Exception("Unsupported OS")
         else:
-            print("Exiftool is already downloaded.")
+            print("Exiftool is already installed.")

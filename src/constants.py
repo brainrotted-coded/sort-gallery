@@ -9,7 +9,10 @@ INSTALL_EXIFTOOL_LINUX: dict[str, str] = {
     'unknown': 'wget https://exiftool.org/Image-ExifTool.tar.gz && tar -xzf Image-ExifTool.tar.gz && cd Image-ExifTool-* && perl Makefile.PL && make test && sudo make install'
 }
 INSTALL_EXIFTOOL_MACOS: str = 'brew install exiftool'
-ADD_EXIFTOOL_ON_PATH: str = 'setx PATH "{}"'
+ADD_EXIFTOOL_ON_PATH: dict[str, str] = {
+    'windows': 'setx PATH "{}"',
+    'linux/macos': 'export PATH="{}"'
+}
 
 # Multimedia.py CMD
 CHANGE_ALL_DATES_CMD: str = 'exiftool -r -fast -overwrite_original "-AllDates<FileModifyDate" "{}"'
